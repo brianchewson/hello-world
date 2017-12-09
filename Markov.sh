@@ -1,11 +1,12 @@
 #!/bin/bash -e
 
+SELF=${0}
 #============================================FUNCTIONS==============================================
 usage()
 {
-  err_echo "$0 is a tool to read a file and generate output based on the letter frequency and distribution of the input file
+  err_echo "$SELF is a tool to read a file and generate output based on the letter frequency and distribution of the input file
 -----------------------------------------------------------------------bch
-USAGE: $0 -i FILENAME [-n NUMBER]
+USAGE: $SELF -i FILENAME [-n NUMBER]
   -i     # the input filename
   -n     # number of lines to print [default 1]
 "
@@ -23,7 +24,7 @@ verify_dependencies()
 {	
   for REQUIRED_FILE in ${REQUIRED_FILES}; do
     if [ ! -f ${WORKSPACE}/${REQUIRED_FILE} ]; then
-      usage "${0##*/} requires a missing file, ${REQUIRED_FILE}, to run,
+      usage "${SELF##*/} requires a missing file, ${REQUIRED_FILE}, to run,
 Please add ${REQUIRED_FILE} to ${WORKSPACE} to continue"
     fi
   done
@@ -81,6 +82,18 @@ process_arguments()
     if [ ! -f "${!CHECK_FILE}" ]; then
       usage "FILE ${!CHECK_FILE} doesn't exist"
     fi
+    if [ ! -s "${!CHECK_FILE}" ]; then 
+      usage "FILE ${!CHECK_FILE} is empty."
+    fi
+    FILE_TYPE=$(file -b --mime ${!CHECK_FILE})
+    case "${FILE_TYPE}" in
+      text/plain*)
+        DO_NOTHING=DO_NOTHING
+      ;;
+      *binary)
+        usage "FILE ${!CHECK_FILE} is binary and unable to be used by ${SELF}"
+      ;;
+    esac
   done
 
   REQUIRED_FILES=""
@@ -103,3 +116,5 @@ if [ $# -lt 1 ]; then
 fi
 
 process_arguments "$@"
+
+
