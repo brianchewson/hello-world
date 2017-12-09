@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 SELF=${0}
+SOURCE_DIR=$(dirname $(readlink -f ${SELF}))
 #============================================FUNCTIONS==============================================
 usage()
 {
@@ -23,9 +24,9 @@ err_echo()
 verify_dependencies()
 {	
   for REQUIRED_FILE in ${REQUIRED_FILES}; do
-    if [ ! -f ${WORKSPACE}/${REQUIRED_FILE} ]; then
+    if [ ! -f ${SOURCE_DIR}/${REQUIRED_FILE} ]; then
       usage "${SELF##*/} requires a missing file, ${REQUIRED_FILE}, to run,
-Please add ${REQUIRED_FILE} to ${WORKSPACE} to continue"
+Please add ${REQUIRED_FILE} to ${SOURCE_DIR} to continue"
     fi
   done
 }
@@ -96,7 +97,7 @@ process_arguments()
     esac
   done
 
-  REQUIRED_FILES=""
+  REQUIRED_FILES="count_file_contents"
   if [ -n "${REQUIRED_FILES}" ]; then
     verify_dependencies 
   fi
@@ -117,4 +118,4 @@ fi
 
 process_arguments "$@"
 
-
+./count_file_contents ${INPUT_FILE}
