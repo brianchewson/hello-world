@@ -1,12 +1,13 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 #============================================FUNCTIONS==============================================
 usage()
 {
-  err_echo "$0 is a tool to
+  err_echo "$0 is a tool to read a file and generate output based on the letter frequency and distribution of the input file
 -----------------------------------------------------------------------bch
-USAGE: $0 -o [OPTIONAL]
-  -o     # this is what -o does
+USAGE: $0 -i FILENAME [-n NUMBER]
+  -i     # the input filename
+  -n     # number of lines to print [default 1]
 "
   err_echo $*
   exit 1
@@ -35,22 +36,52 @@ process_arguments()
       -h|--help)
         usage
       ;;
-      -o|-O)
+      -i|-I)
         if [ -z "$2" ]; then
-          usage "Improper number of arguments supplied for OPTIONAL flag (-o)"
+          usage "Improper number of arguments supplied for INPUT_FILE flag (-i)"
         fi
-        DO_O=$2
+        INPUT_FILE=$2
+        shift
+      ;;
+      -n|-N)
+        if [ -z "$2" ]; then
+          usage "Improper number of arguments supplied for NUMBER flag (-n)"
+        fi
+        case "$2" in
+          ''|*[!0-9]*)
+            usage "Improper format supplied for NUMBER flag (-n) expected a number, not $2"
+          ;;
+          *)
+            NUMBER_OUT=$2
+          ;;
+        esac
+        shift
+      ;;
+      -p|-P)
+        if [ -z "$2" ]; then
+          usage "Improper number of arguments supplied for PREVIOUS_ANALYSIS flag (-p)"
+        fi
+        PREVIOUS_ANALYSIS=true
+        PREVIOUS_ANALYSIS_FILE="$2"
         shift
       ;;
     esac
     shift
   done
-  if [ -z "$DO_O" ]; then
-    usage "NO DIR specified"
+
+  FILE_LIST="INPUT_FILE"
+  if [ "${PREVIOUS_ANALYSIS}" = true ]; then
+    FILE_LIST="${FILE_LIST} PREVIOUS_ANALYSIS_FILE"
   fi
-  if [ ! -d "$DO_O" ]; then
-    usage "DIR $DO_O doesn't exist"
-  fi
+
+  for CHECK_FILE in ${FILE_LIST}; do
+    if [ -z "${!CHECK_FILE}" ]; then
+      usage "NO ${CHECK_FILE} specified"
+    fi
+    if [ ! -f "${!CHECK_FILE}" ]; then
+      usage "FILE ${!CHECK_FILE} doesn't exist"
+    fi
+  done
 
   REQUIRED_FILES=""
   if [ -n "${REQUIRED_FILES}" ]; then
@@ -62,8 +93,10 @@ if [ -z "${WORKSPACE}" ]; then
   WORKSPACE=$(pwd)
 fi
 
-
-DO_O=""
+INPUT_FILE=""
+NUMBER_OUT="1"
+PREVIOUS_ANALYSIS="FALSE"
+PREVIOUS_ANALYSIS_FILE=""
 
 if [ $# -lt 1 ]; then
   usage "No arguments specified"
