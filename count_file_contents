@@ -2,7 +2,35 @@
 
 INFILE=$1
 OUTFILE=${INFILE%.*}.cnt
+declare -a LEN_ARRAY=()
+declare -A LETTER_PAIR
 
 while read LINE; do
-  echo "L:${#LINE}"
+  # get the length of theline information
+  LENGTH=${#LINE}
+  if [ "${LENGTH}" -gt 0 ]; then
+    if [ -z "${LEN_ARRAY[$LENGTH]}" ]; then
+      LEN_ARRAY[$LENGTH]=0
+    fi 
+    let LEN_ARRAY[$LENGTH]+=1
+  fi
+
+  # get the Character pairing data
+  for (( i=0; i<${LENGTH}-1; i++ )); do
+    WORD=${LINE:$i:2}
+    WORD="${WORD//\'/<>}"
+    if [ -z "${LETTER_PAIR["${WORD}"]}" ]; then
+      LETTER_PAIR["${WORD}"]=0
+    fi
+    let LETTER_PAIR["${WORD}"]+=1
+  done
 done < ${INFILE}
+
+for LINE_LENGTH in "${!LEN_ARRAY[@]}"; do
+  echo "L:${LINE_LENGTH}:${LEN_ARRAY[${LINE_LENGTH}]}"
+done
+
+for CHAR_PAIR in "${!LETTER_PAIR[@]}"; do
+  CHAR_PAIR="${CHAR_PAIR//<>/\'}"
+  echo "C:${CHAR_PAIR:0:1}:${CHAR_PAIR:1:1}:${LETTER_PAIR[${CHAR_PAIR}]}"
+done
