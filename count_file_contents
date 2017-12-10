@@ -24,6 +24,11 @@ while read LINE; do
     fi
     let LETTER_PAIR["${WORD}"]+=1
   done
+
+  # get the forward position data
+  for (( i=0; i<${LENGTH}; i++ )); do
+  done
+
 done < ${INFILE}
 
 for LINE_LENGTH in "${!LEN_ARRAY[@]}"; do
